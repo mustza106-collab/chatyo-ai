@@ -19,9 +19,8 @@ jobs:
       - run: cp android/app/google-services.json /tmp/google-services.json || echo "no json"
       - run: rm -rf android
       - run: flutter create --platforms=android --org com.chatyo --project-name chatyo_ai .
-      - run: sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 23/g; s/minSdkVersion flutter.minSdkVersion/minSdkVersion 23/g' android/app/build.gradle android/app/build.gradle.kts || true
-      - run: grep -q "google-services" android/settings.gradle || sed -i "s/id \"com.android.application\"/id \"com.android.application\"\n        id \"com.google.gms.google-services\" version \"4.4.2\" apply false/" android/settings.gradle
-      - run: grep -q "google-services" android/app/build.gradle* || echo 'apply plugin: "com.google.gms.google-services"' >> android/app/build.gradle
+      - run: python3 -c "import pathlib; p=pathlib.Path('android/app/build.gradle'); t=p.read_text(); t=t.replace('minSdk = flutter.minSdkVersion','minSdk = 23'); p.write_text(t)"
+      - run: python3 -c "import pathlib; p=pathlib.Path('android/settings.gradle'); t=p.read_text(); t=t.replace('id \"com.android.application\"','id \"com.android.application\"\n        id \"com.google.gms.google-services\" version \"4.4.2\" apply false') if 'google-services' not in t else t; p.write_text(t)"
       - run: cp /tmp/google-services.json android/app/google-services.json || echo "no json to restore"
       - run: flutter pub get
       - run: flutter build apk --release
