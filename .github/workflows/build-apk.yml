@@ -19,9 +19,7 @@ jobs:
       - run: cp android/app/google-services.json /tmp/google-services.json || echo "no json"
       - run: rm -rf android
       - run: flutter create --platforms=android --org com.chatyo --project-name chatyo_ai .
-      - run: python3 -c "import pathlib; p=pathlib.Path('android/app/build.gradle'); t=p.read_text(); t=t.replace('minSdk = flutter.minSdkVersion','minSdk = 23'); p.write_text(t)"
-      - run: python3 -c "import pathlib; p=pathlib.Path('android/settings.gradle'); lines=p.read_text().splitlines(); out=[]; done=False; 
-        [out.append(l) or (out.append('        id \"com.google.gms.google-services\" version \"4.4.2\" apply false') if ('com.android.application' in l and not done) else None) or (setattr(__import__('builtins'),'x',1) if False else None) for l in lines]; p.write_text('\n'.join(out)+'\n')"
+      - run: sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 23/g' android/app/build.gradle || true
       - run: cp /tmp/google-services.json android/app/google-services.json || echo "no json to restore"
       - run: flutter pub get
       - run: flutter build apk --release
