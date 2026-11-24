@@ -5,8 +5,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  try {
+    await Firebase.initializeApp().timeout(Duration(seconds: 5));
+  } catch (e) {
+    print("Firebase error: $e");
+  }
   runApp(const ChatYoApp());
+
 }
 
 class ChatYoApp extends StatelessWidget {
