@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "279822266215",
+    "project_id": "chatyo-3356f",
+    "storage_bucket": "chatyo-3356f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:279822266215:android:4b0608f50e5e2c7568c9c2",
+        "android_client_info": {
+          "package_name": "com.chatyo.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgP-zdzdtTOkHEpoDLyhdxwPMTR--fLiw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
