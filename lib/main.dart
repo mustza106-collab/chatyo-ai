@@ -104,7 +104,7 @@ class _HomeState extends State<Home> {
                           character: c,
                           onSpend: () {
                             setState(() {
-                              if (coins >= c['price']) coins -= c['price'];
+                              if (coins >= (c['price'] as int)) coins -= (c['price'] as int);
                             });
                           },
                         ),
