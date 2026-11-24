@@ -19,6 +19,8 @@ jobs:
       - run: cp android/app/google-services.json /tmp/google-services.json || echo "no json"
       - run: rm -rf android
       - run: flutter create --platforms=android --org com.chatyo --project-name chatyo_ai .
+      - run: sed -i '/flutterEmbedding/d' android/app/src/main/AndroidManifest.xml
+      - run: sed -i 's/minSdkVersion 21/minSdkVersion 23/g; s/minSdk = 21/minSdk = 23/g; s/minSdkVersion flutter.minSdkVersion/minSdkVersion 23/g' android/app/build.gradle android/app/build.gradle.kts || true
       - run: cp /tmp/google-services.json android/app/google-services.json || echo "no json to restore"
       - run: flutter pub get
       - run: flutter build apk --release
