@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-void main() => runApp(const ChatYoApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(const ChatYoApp());
+}
 
 class ChatYoApp extends StatelessWidget {
   const ChatYoApp({super.key});
@@ -11,245 +18,287 @@ class ChatYoApp extends StatelessWidget {
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: const Color(0xFF0F0F1A),
       ),
-      home: const Home(),
+      home: const AuthGate(),
     );
   }
 }
 
-class Home extends StatefulWidget {
-  const Home({super.key});
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
   @override
-  State<Home> createState() => _HomeState();
-}
-
-class _HomeState extends State<Home> {
-  int coins = 200;
-
-  // شخصيات ذكاء اصطناعي - ماشي بنات حقيقيين
-  final List<Map<String, dynamic>> characters = [
-    {
-      'name': 'Yasmin AI',
-      'type': 'رفيقة رومانسية - AI',
-      'desc': 'شخصية ذكاء اصطناعي رومانسية',
-      'price': 15,
-      'color': 0xFFFF6B9D,
-    },
-    {
-      'name': 'Sara AI',
-      'type': 'صديقة مرحة - AI',
-      'desc': 'شخصية ذكاء اصطناعي مرحة',
-      'price': 15,
-      'color': 0xFF8B5CF6,
-    },
-    {
-      'name': 'Hana AI',
-      'type': 'رفيقة هادئة - AI',
-      'desc': 'شخصية ذكاء اصطناعي هادئة',
-      'price': 20,
-      'color': 0xFF4ECDC4,
-    },
-    {
-      'name': 'Lina AI',
-      'type': 'صديقة جريئة - AI',
-      'desc': 'شخصية ذكاء اصطناعي جريئة',
-      'price': 20,
-      'color': 0xFFFFA500,
-    },
-  ];  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('ChatYo AI 💜'),
-        backgroundColor: Colors.transparent,
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFF8B5CF6),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text('$coins 💰'),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(12),
-            child: Text(
-              'اختار شخصية AI باش تهضر معاها\nكلهم شخصيات ذكاء اصطناعي',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 15),
-            ),
-          ),
-          Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(12),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.75,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-              ),
-              itemCount: characters.length,
-              itemBuilder: (_, i) {
-                final c = characters[i];
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ChatScreen(
-                          character: c,
-                          onSpend: () {
-                            setState(() {
-                              if (coins >= (c['price'] as int)) coins -= (c['price'] as int);
-                            });
-                          },
-                        ),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1E1E2F),
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Color(c['color'] as int),
-                              borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(18)),
-                            ),
-                            child: Center(
-                              child: Text(
-                                (c['name'] as String)[0],
-                                style: const TextStyle(
-                                    fontSize: 60,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Column(
-                            children: [
-                              Text(c['name'],
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold)),
-                              Text(c['type'],
-                                  style: const TextStyle(fontSize: 12)),
-                              const SizedBox(height: 4),
-                              Text('${c['price']} 💰 / رسالة',
-                                  style: const TextStyle(
-                                      color: Colors.amber)),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snap) {
+        if (snap.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+              body: Center(child: CircularProgressIndicator()));
+        }
+        if (snap.hasData) return const PeopleScreen();
+        return const AuthScreen();
+      },
     );
   }
-}class ChatScreen extends StatefulWidget {
-  final Map<String, dynamic> character;
-  final VoidCallback onSpend;
-  const ChatScreen({super.key, required this.character, required this.onSpend});
-
-  @override
-  State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
-  final TextEditingController _controller = TextEditingController();
-  final List<Map<String, String>> messages = [];
-
+class AuthScreen extends StatefulWidget {
+  const AuthScreen({super.key});
   @override
-  void initState() {
-    super.initState();
-    messages.add({
-      'who': 'ai',
-      'text':
-          'سلام! أنا ${widget.character['name']}، شخصية ذكاء اصطناعي. شنو بغيتي نهضرو عليه اليوم؟'
-    });
-  }
+  State<AuthScreen> createState() => _AuthScreenState();
+}
 
-  String getReply(String text) {
-    final name = widget.character['name'] as String;
-    if (text.contains('سلام') || text.contains('salam')) {
-      return 'سلام! فرحانة نهضر معاك. كيداير نهارك؟';
-    }
-    if (text.contains('شكون نتا') || text.contains('شكون انت')) {
-      return 'أنا $name، شخصية ذكاء اصطناعي، ماشي إنسان حقيقي. هنا باش نعاونك ونهضر معاك.';
-    }
-    if (text.contains('ملل') || text.contains('مليت')) {
-      return 'إلا مليتي، نلعبو لعبة ديال الأسئلة؟ سولني أي حاجة ولا قولي ليا شنو كيعجبك.';
-    }
-    if (text.contains('ضحك') || text.contains('نكتة')) {
-      return 'هههه، عرفتي شنو قال التيليفون للشارجور؟ بلا بيك أنا طافي 😄';
-    }
-    return 'فهمتك، زوين هادشي اللي قلتي. زيد حكي ليا كثر، أنا كنسمع ليك.';
-  }
+class _AuthScreenState extends State<AuthScreen> {
+  final nameC = TextEditingController();
+  final emailC = TextEditingController();
+  final passC = TextEditingController();
+  final cityC = TextEditingController();
+  bool isLogin = true;
+  bool isAdult = false;
+  String error = '';
 
-  void send() {
-    final text = _controller.text.trim();
-    if (text.isEmpty) return;
-    setState(() {
-      messages.add({'who': 'me', 'text': text});
-      messages.add({'who': 'ai', 'text': getReply(text)});
-    });
-    _controller.clear();
-    widget.onSpend();
-  }
-
-  @override
+  Future<void> submit() async {
+    try {
+      if (!isLogin && !isAdult) {
+        setState(() => error = 'خاصك تكون +18 باش تدخل');
+        return;
+      }
+      if (isLogin) {
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+            email: emailC.text.trim(), password: passC.text.trim());
+      } else {
+        final cred = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(
+                email: emailC.text.trim(), password: passC.text.trim());
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(cred.user!.uid)
+            .set({
+          'name': nameC.text.trim(),
+          'email': emailC.text.trim(),
+          'city': cityC.text.trim(),
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      setState(() => error = 'خطأ: $e');
+    }
+  }   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      appBar: AppBar(title: const Text('ChatYo - ناس حقيقيين 💜')),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
           children: [
-            Text(widget.character['name']),
-            const Text('شخصية ذكاء اصطناعي - AI',
-                style: TextStyle(fontSize: 11)),
+            if (!isLogin) ...[
+              TextField(
+                  controller: nameC,
+                  decoration: const InputDecoration(
+                      labelText: 'السمية الحقيقية')),
+              const SizedBox(height: 10),
+              TextField(
+                  controller: cityC,
+                  decoration:
+                      const InputDecoration(labelText: 'المدينة')),
+              const SizedBox(height: 10),
+            ],
+            TextField(
+                controller: emailC,
+                decoration:
+                    const InputDecoration(labelText: 'الإيميل')),
+            const SizedBox(height: 10),
+            TextField(
+                controller: passC,
+                obscureText: true,
+                decoration:
+                    const InputDecoration(labelText: 'كلمة السر')),
+            const SizedBox(height: 10),
+            if (!isLogin)
+              Row(
+                children: [
+                  Checkbox(
+                      value: isAdult,
+                      onChanged: (v) =>
+                          setState(() => isAdult = v ?? false)),
+                  const Expanded(
+                      child: Text(
+                          'أنا +18 سنة وكنأكد بلي المعلومات ديالي حقيقية')),
+                ],
+              ),
+            if (error.isNotEmpty)
+              Text(error, style: const TextStyle(color: Colors.red)),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: submit,
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF8B5CF6),
+                  minimumSize: const Size(double.infinity, 50)),
+              child: Text(isLogin ? 'دخول' : 'صايب حساب حقيقي'),
+            ),
+            TextButton(
+              onPressed: () => setState(() => isLogin = !isLogin),
+              child: Text(isLogin
+                  ? 'ماعندكش حساب؟ صايب حساب'
+                  : 'عندك حساب؟ دخول'),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'هاد التطبيق للناس الحقيقيين فقط.\nممنوع الحسابات المزيفة والتصاور المسروقة.\nإلا شفتي شي حساب مزيف، ديرو سينيال وبلوك.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
           ],
         ),
       ),
+    );
+  }
+}// صفحة الناس الحقيقيين
+class PeopleScreen extends StatelessWidget {
+  const PeopleScreen({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final myUid = FirebaseAuth.instance.currentUser!.uid;
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('ChatYo - ناس حقيقيين'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => FirebaseAuth.instance.signOut(),
+          ),
+        ],
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('users')
+            .orderBy('createdAt', descending: true)
+            .snapshots(),
+        builder: (context, snap) {
+          if (!snap.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final docs =
+              snap.data!.docs.where((d) => d.id != myUid).toList();
+          if (docs.isEmpty) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(20),
+                child: Text(
+                  'مازال حتى واحد مسجل من غيرك.\nبارتاجي التطبيق مع صحابك باش يبانو هنا.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          }
+          return ListView.builder(
+            itemCount: docs.length,
+            itemBuilder: (_, i) {
+              final data = docs[i].data() as Map<String, dynamic>;
+              return ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: const Color(0xFF8B5CF6),
+                  child: Text((data['name'] ?? '?')[0].toUpperCase()),
+                ),
+                title: Text(data['name'] ?? 'مستخدم'),
+                subtitle: Text(data['city'] ?? ''),
+                trailing: const Icon(Icons.chat),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => RealChatScreen(
+                        otherId: docs[i].id,
+                        otherName: data['name'] ?? 'مستخدم',
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+// شات حقيقي بين جوج ناس
+class RealChatScreen extends StatefulWidget {
+  final String otherId;
+  final String otherName;
+  const RealChatScreen(
+      {super.key, required this.otherId, required this.otherName});
+  @override
+  State<RealChatScreen> createState() => _RealChatScreenState();
+}
+
+class _RealChatScreenState extends State<RealChatScreen> {
+  final _controller = TextEditingController();
+  String get chatId {
+    final myUid = FirebaseAuth.instance.currentUser!.uid;
+    final ids = [myUid, widget.otherId]..sort();
+    return ids.join('_');
+  }
+
+  Future<void> send() async {
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
+    final myUid = FirebaseAuth.instance.currentUser!.uid;
+    await FirebaseFirestore.instance
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .add({
+      'text': text,
+      'senderId': myUid,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+    _controller.clear();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final myUid = FirebaseAuth.instance.currentUser!.uid;
+    return Scaffold(
+      appBar: AppBar(title: Text(widget.otherName)),
       body: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(12),
-              itemCount: messages.length,
-              itemBuilder: (_, i) {
-                final m = messages[i];
-                final isMe = m['who'] == 'me';
-                return Align(
-                  alignment:
-                      isMe ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: isMe
-                          ? const Color(0xFF8B5CF6)
-                          : const Color(0xFF1E1E2F),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Text(m['text']!),
-                  ),
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('chats')
+                  .doc(chatId)
+                  .collection('messages')
+                  .orderBy('createdAt')
+                  .snapshots(),
+              builder: (context, snap) {
+                if (!snap.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                final msgs = snap.data!.docs;
+                return ListView.builder(
+                  padding: const EdgeInsets.all(12),
+                  itemCount: msgs.length,
+                  itemBuilder: (_, i) {
+                    final m = msgs[i].data() as Map<String, dynamic>;
+                    final isMe = m['senderId'] == myUid;
+                    return Align(
+                      alignment: isMe
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isMe
+                              ? const Color(0xFF8B5CF6)
+                              : const Color(0xFF1E1E2F),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Text(m['text'] ?? ''),
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -272,7 +321,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 const SizedBox(width: 8),
                 IconButton(
                   onPressed: send,
-                  icon: const Icon(Icons.send, color: Color(0xFF8B5CF6)),
+                  icon: const Icon(Icons.send,
+                      color: Color(0xFF8B5CF6)),
                 ),
               ],
             ),
