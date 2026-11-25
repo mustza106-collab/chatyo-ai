@@ -110,6 +110,14 @@ class _AuthScreenState extends State<AuthScreen> {
           'city': cityC.text.trim(),
           'createdAt': FieldValue.serverTimestamp(),
         });
+      }      if (rememberMe) {
+        final p = await SharedPreferences.getInstance();
+        await p.setString('saved_email', emailC.text.trim());
+        await p.setString('saved_pass', passC.text.trim());
+      } else {
+        final p = await SharedPreferences.getInstance();
+        await p.remove('saved_email');
+        await p.remove('saved_pass');
       }
     } catch (e) {
       setState(() => error = 'خطأ: $e');
