@@ -68,7 +68,25 @@ class _AuthScreenState extends State<AuthScreen> {
   final cityC = TextEditingController();
   bool isLogin = true;
   bool isAdult = false;
+  bool rememberMe = true;
   String error = '';
+  @override
+  void initState() {
+    super.initState();
+    _loadSaved();
+  }
+
+  Future<void> _loadSaved() async {
+    final p = await SharedPreferences.getInstance();
+    final e = p.getString('saved_email') ?? '';
+    final pw = p.getString('saved_pass') ?? '';
+    if (e.isNotEmpty) {
+      setState(() {
+        emailC.text = e;
+        passC.text = pw;
+      });
+    }
+  }
 
   Future<void> submit() async {
     try {
