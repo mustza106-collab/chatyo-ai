@@ -29,8 +29,28 @@ class ChatYoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF0F0F1A),
+            theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: const Color(0xFF1A0B2E),
+        primaryColor: const Color(0xFF7C3AED),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF7C3AED),
+          secondary: Color(0xFFEC4899),
+          surface: Color(0xFF1A0B2E),
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF7C3AED),
+          foregroundColor: Colors.white,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF7C3AED),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(25),
+            ),
+          ),
+        ),
+      ),
       ),
       home: const AuthGate(),
     );
