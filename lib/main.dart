@@ -6,7 +6,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
-    await Firebase.initializeApp().timeout(Duration(seconds: 5));
+    await Firebase.initializeApp(
+      options: FirebaseOptions(
+        apiKey: "AIzaSyCgP-zdzdtTOkHEpoDLyhdxwPMTR--fLiw",
+        appId: "1:279822266215:android:4b0608f50e5e2c7568c9c2",
+        messagingSenderId: "279822266215",
+        projectId: "chatyo-3356f",
+        storageBucket: "chatyo-3356f.firebasestorage.app",
+      ),
+    );
   } catch (e) {
     print("Firebase error: $e");
   }
