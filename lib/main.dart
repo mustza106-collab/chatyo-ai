@@ -51,7 +51,6 @@ class ChatYoApp extends StatelessWidget {
           ),
         ),
       ),
-      ),
       home: const AuthGate(),
     );
   }
