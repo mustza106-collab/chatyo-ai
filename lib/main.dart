@@ -185,6 +185,23 @@ class _AuthScreenState extends State<AuthScreen> {
                 ],
               ),
             if (error.isNotEmpty)
+          TextButton(
+            onPressed: () async {
+              if (emailC.text.trim().isEmpty) {
+                setState(() => error = 'كتب الإيميل ديالك اللول');
+                return;
+              }
+              try {
+                await FirebaseAuth.instance.sendPasswordResetEmail(
+                  email: emailC.text.trim(),
+                );
+                setState(() => error = 'صيفطنا ليك لينك فالإيميل ديالك');
+              } catch (e) {
+                setState(() => error = 'ما قدرناش نصيفطو: $e');
+              }
+            },
+            child: const Text('نسيتي كلمة السر؟'),
+          ),
               Text(error, style: const TextStyle(color: Colors.red)),
             const SizedBox(height: 10),
             ElevatedButton(
